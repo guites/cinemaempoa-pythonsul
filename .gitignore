@@ -2,3 +2,4 @@ cinebancarios/
 !cinebancarios/.gitkeep
 *.json
 *.db
+.env
