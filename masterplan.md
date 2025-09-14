@@ -15,6 +15,13 @@ strip_to_markdown.py
 
 llm_outputs.py
 - consome os dados da coluna `markdown_description` e popula a tabela `llm_outputs`
+- chamar com o nome da llm desejada `python3 llm_outputs gemini-2.0-flash|deepseek-chat`
+
+## sobre a opção dos modelos utilizados
+
+realmente não sei ='|
+
+https://artificialanalysis.ai/models/comparisons/deepseek-v3-1-vs-gemini-2-0-flash
 
 
 ## database

@@ -1,7 +1,7 @@
 import sqlite3
 from datetime import datetime
 import os
-from llama_index.llms.google_genai import GoogleGenAI
+
 from llama_index.core import Settings
 from llama_index.core.llms import ChatMessage
 from llama_index.core.bridge.pydantic import BaseModel
@@ -10,12 +10,9 @@ load_dotenv()
 import time
 from google.genai.errors import ClientError as GoogleGenAIClientError
 import sys
+import argparse
 
-GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 SQLITE_FILE = os.getenv("SQLITE_FILE")
-if not GEMINI_API_KEY:
-    raise ValueError("GEMINI_API_KEY is not set")
-
 if not SQLITE_FILE:
     raise ValueError("SQLITE_FILE is not set")
 
@@ -33,21 +30,33 @@ class Movies(BaseModel):
     movies: list[Movie]
 
 class ExtractScreeningsFromMarkdown:
-    def __init__(self):
-        self.model_name = "gemini-2.0-flash"
+    def __init__(self, model_name):
+        self.model_name = model_name
         self.sqlite_file = SQLITE_FILE
-        self.llm = GoogleGenAI(model=self.model_name, api_key=GEMINI_API_KEY)
+        self.llm = self._get_llm()
         Settings.llm = self.llm
+    
+    def _get_llm(self):
+        if self.model_name == "gemini-2.0-flash":
+            GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
+            if not GEMINI_API_KEY:
+                raise ValueError("GEMINI_API_KEY is not set")
+            from llama_index.llms.google_genai import GoogleGenAI
+            return GoogleGenAI(model=self.model_name, api_key=GEMINI_API_KEY)
+        if self.model_name == "deepseek-chat":
+            DEEPSEEK_API_KEY = os.getenv("DEEPSEEK_API_KEY")
+            if not DEEPSEEK_API_KEY:
+                raise ValueError("DEEPSEEK_API_KEY is not set")
+            from llama_index.llms.deepseek import DeepSeek
+            return DeepSeek(model=self.model_name, api_key=DEEPSEEK_API_KEY)
+        raise ValueError(f"Invalid model name. Supported models: gemini-2.0-flash, deepseek-chat")
     
     def extract_screenings_from_markdown(self):
         conn = sqlite3.connect(self.sqlite_file)
         cursor = conn.cursor()
         cursor.execute("""
-            SELECT p.id, p.link, p.pubDate, p.markdown_description
-            FROM posts p LEFT JOIN llm_outputs l ON p.id = l.post_id
-            WHERE p.markdown_description IS NOT NULL AND l.id IS NULL
-            ORDER BY pubDate ASC
-        """)
+            SELECT p.id, p.link, p.pubDate, p.markdown_description FROM posts p LEFT JOIN llm_outputs l ON p.id = l.post_id WHERE p.markdown_description IS NOT NULL AND l.llm != ? ORDER BY pubDate ASC
+        """, (self.model_name,))
         data = cursor.fetchall()
         for row in data:
             # pubDate is in the format 2010-03-09T18:48:00+00:00
@@ -140,5 +149,14 @@ If no movies are found, return an empty list."""
         self.extract_screenings_from_markdown()
 
 if __name__ == "__main__":
-    extract_screenings_from_markdown = ExtractScreeningsFromMarkdown()
+    parser = argparse.ArgumentParser(description="Extract movie screenings from markdown using LLM")
+    parser.add_argument(
+        "model_name", 
+        choices=["gemini-2.0-flash", "deepseek-chat"],
+        help="The LLM model to use for extraction"
+    )
+    
+    args = parser.parse_args()
+    
+    extract_screenings_from_markdown = ExtractScreeningsFromMarkdown(args.model_name)
     extract_screenings_from_markdown.run()
