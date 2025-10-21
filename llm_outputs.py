@@ -55,7 +55,10 @@ class ExtractScreeningsFromMarkdown:
         conn = sqlite3.connect(self.sqlite_file)
         cursor = conn.cursor()
         cursor.execute("""
-            SELECT p.id, p.link, p.pubDate, p.markdown_description FROM posts p LEFT JOIN llm_outputs l ON p.id = l.post_id WHERE p.markdown_description IS NOT NULL AND l.llm != ? ORDER BY pubDate ASC
+            SELECT p.id, p.link, p.pubDate, p.markdown_description FROM posts p
+            WHERE p.markdown_description IS NOT NULL
+            AND (SELECT COUNT(*) FROM llm_outputs WHERE post_id = p.id AND llm = ?) = 0
+            ORDER BY pubDate ASC
         """, (self.model_name,))
         data = cursor.fetchall()
         for row in data:
