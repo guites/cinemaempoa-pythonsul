@@ -54,3 +54,5 @@ Cada uma das etapas foi implementada através de um script Python separado, conf
 
 </details>
 
+
+Existe um backup dos filmes e horários extraídos pelos LLMs em <https://drive.google.com/drive/folders/15_CunVPRZ3S5SHH7jaqWu3t03BWm6tjT?usp=sharing> (drive público).
