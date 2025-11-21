@@ -1,0 +1,642 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+	<title>cinemaempoa</title>
+
+	<link rel="stylesheet" href="dist/reset.css">
+	<link rel="stylesheet" href="dist/reveal.css">
+	<link rel="stylesheet" href="dist/theme/serif.css">
+	<style>
+		footer {
+			position: absolute;
+			bottom: 0;
+		}
+	</style>
+
+	<!-- Theme used for syntax highlighted code -->
+	<link rel="stylesheet" href="plugin/highlight/monokai.css">
+</head>
+
+<body>
+	<div class="reveal">
+		<div class="slides">
+			<section>
+				<h2>Do Regex a LLM</h2>
+				<p>Extraindo horários de cinema de páginas imprevisíveis</p>
+				<img style="display: block; margin: 20px auto; max-width: 320px; height: auto;" src="./midias/cinemaempoa-foil.png">
+				<small>(Um estudo de caso do cinemaempoa.com.br)</small>
+			</section>
+			<section data-markdown>
+				<textarea data-template>
+					## Quem somos
+
+					Nilton Pimentel <small><a href="https://github.com/niltonpimentel02">(github.com/niltonpimentel02)</a></small>
+
+					<div style="display: flex; align-items: start; justify-content: center;">
+						<img style="object-fit: contain; border-radius: 50%;" width="200" src="./midias/nilton-2.png">
+						<ul>
+							<li>Python Developer <small>PROCURANDO TRAMPO 🤣</small></li>
+							<li>Revisor Técnico
+								<ul>
+									<li>
+										Django 5 For The Impatient
+									</li>
+								</ul>
+							</li>
+							<li>Mentor CumbucaDev</li>
+							<li>Funcionalzeiro Iniciante</li>
+							<li>Corredor Iniciante</li>
+						</ul>
+					</div>
+				</textarea>
+			</section>
+			<section data-markdown>
+				<textarea data-template>
+						## Quem somos
+						
+						Guilherme Garcia <small><a href="https://github.com/guites">(github.com/guites)</a></small>
+
+						<div style="display: flex; align-items: start;">
+							<img style="object-fit: contain; border-radius: 50%;" width="200" src="./midias/guites-crop.png">
+							<ul>
+								<li>~6 anos no mundo da programação</li>
+								<li>início como tech support</li>
+								<li>exp. como líder técnico e backend</li>
+								<li>participação em hackerspaces <small>&lt;3 matehackers</small></li>
+								<li>conheceu a cumbuca.dev em 2024 <small>💜</small></li>
+							</ul>
+						</div>
+					</textarea>
+			</section>
+			<section data-markdown>
+				<textarea data-template>
+					## Agenda
+
+					- ~Quem somos~
+					- O que é o cinemaempoa? 🎬
+					- Qual o desafio?
+					- Um estudo de caso
+					- Como resolvemos (LLMs to the rescue)
+				</textarea>
+			</section>
+			<section data-background-iframe="https://cinemaempoa.com.br" data-background-interactive>
+				<div style="position: absolute;
+					width: 40%;
+					right: 0;
+					box-shadow:
+						0 1px 4px rgba(0, 0, 0, 0.5),
+						0 5px 25px rgba(0, 0, 0, 0.2);
+					background-color: rgba(0, 0, 0, 0.9);
+					color: #fff;
+					padding: 20px;
+					font-size: 20px;
+					text-align: left;">
+					<h2 style="color: #fff;">cinemaempoa</h2>
+					<p>O cinemaempoa mostra os filmes em exibição no CineBancários, Cinemateca Capitólio, Cinemateca Paulo Amorim e Sala Redenção em Porto Alegre.</p>
+				</div>
+			</section>
+			<section data-markdown>
+				<textarea data-template>
+					## O desafio
+
+					<p style="margin-bottom: 0px;">Automatizar a coleta das programações dos cinemas.</p>
+
+					<img src="./midias/cinemaempoa-robot.jpeg">
+				</textarea>
+			</section>
+			<section data-markdown>
+				<textarea data-template>
+					## Como isso é feito
+
+					Usando a stack mais simples possível!
+
+					<img src="./midias/req+beaut.png">
+
+					<small>E funciona muito bem (às vezes)</small>
+				</textarea>
+			</section>
+			<section data-markdown>
+				<textarea data-template>
+					### Download das páginas
+
+					<img src="./midias/requests-capitolio-page.png">
+				</textarea>
+			</section>
+			<section>
+					<h2>Interpretando HTML</h2>
+					<div class="r-stack">
+						<img data-fragment-index="0" class="fragment fade-out" width="600" src="./midias/capitolio-programacao-cropped.png">
+						<img data-fragment-index="0" class="fragment fade-in r-frame" width="600" src="./midias/bs.png">
+						<img data-fragment-index="2" class="fragment fade-in" src="./midias/code-scr-1.png">
+						<img data-fragment-index="3" class="fragment fade-in" src="./midias/code-scr-1-emoji.png">
+					</div>
+			</section>
+			<section>
+				<h3>HTML ... bem estruturado!</h3>
+				<pre><code data-line-numbers="|1|2-26|3|5-14|8|15|17-18|19-23|24|41-42|69|71-75" data-trim>
+					<div class="movies-container">
+						<div class="movie">
+							<img class="movie-poster"
+								src="https://www.capitolio.org.br/wp-content/uploads/2025/11/Captura-de-tela-2025-11-10-144649-1.jpg"
+								title="Captura de tela 2025-11-10 144649" alt="">
+							<div class="movie-info">
+								<div class="movie-detail-blocks">
+									<div class="movie-detail-block">
+										<img src="https://www.capitolio.org.br/wp-content/themes/capitolio\/images\/icon-time.png">
+										<span>Horários: 15:00h</span>
+									</div>
+									<div class="movie-detail-block">
+										<img
+											src="https://www.capitolio.org.br/wp-content/themes/capitolio\/images\/icon-sala_de_cinema-room.png">
+										<span>Sala de Cinema</span>
+									</div>
+								</div>
+								<h1 class="movie-title">PX Origens + Rapacidade</h1>
+								<div class="movie-subtitle">entrada franca</div>
+								<div class="movie-director">
+								</div>
+								<p class="movie-text">PX Origens: No bairro de Peixinhos, localizado entre os municípios de Olinda e Recife,
+									fragmentos e recortes de memórias são disputados entre o abandono que arquiteta um presente sombrio, e o
+									desejo inflamado de um novo amanhã. Brasil | 2025
+									| 23 minutos | DCP Direção: Adalberto Oliveira Classificação: Livre &nbsp; Rapacidade é um filme-ensaio
+									[…]</p>
+								<a class="read-more" href="/eventos/9437">leia +</a>
+							</div>
+						</div>
+
+						<div class="movie">
+							<img class="movie-poster"
+								src="https://www.capitolio.org.br/wp-content/uploads/2025/11/A-MENINA-E-O-POTE-CARTAZ.jpg"
+								title="A-MENINA-E-O-POTE-CARTAZ" alt="">
+							<div class="movie-info">
+								<div class="movie-detail-blocks">
+									<div class="movie-detail-block">
+										<img src="https://www.capitolio.org.br/wp-content/themes/capitolio\/images\/icon-time.png">
+										<span>Horários: 17:00h</span>
+									</div>
+									<div class="movie-detail-block">
+										<img
+											src="https://www.capitolio.org.br/wp-content/themes/capitolio\/images\/icon-sala_de_cinema-room.png">
+										<span>Sala de Cinema</span>
+									</div>
+								</div>
+								<h1 class="movie-title">A Menina e o Pote + Cavaram uma Cova no Meu Coração + Quando Meu Mundo era Mais
+									Mundo</h1>
+								<div class="movie-subtitle">entrada franca</div>
+								<div class="movie-director">
+								</div>
+								<p class="movie-text">A Menina e o Pote: Dirigido por&nbsp;Valentina Homem&nbsp;e&nbsp;Tati Bond, o
+									curta-metragem&nbsp;A Menina e o Pote&nbsp;teve estreia mundial na&nbsp;Semana da Crítica do Festival de
+									Cannes&nbsp;e foi exibido em importantes festivais internacionais,
+									como&nbsp;Annecy,&nbsp;Gramado,&nbsp;Festival do Rio&nbsp;e&nbsp;Havana. A produção é da&nbsp;Sempre
+									Viva. A história parte de um conto escrito por Valentina Homem em 2012 e apresenta uma parábola sobre
+									[…]</p>
+								<a class="read-more" href="/eventos/9422">leia +</a>
+							</div>
+						</div>
+
+						<div class="movie">
+							<img class="movie-poster"
+								src="https://www.capitolio.org.br/wp-content/uploads/2025/11/Captura-de-tela-2025-11-10-151000.jpg"
+								title="Captura de tela 2025-11-10 151000" alt="">
+							<div class="movie-info">
+								<div class="movie-detail-blocks">
+									<div class="movie-detail-block">
+										<img src="https://www.capitolio.org.br/wp-content/themes/capitolio\/images\/icon-time.png">
+										<span>Horários: 19:00h</span>
+									</div>
+									<div class="movie-detail-block">
+										<img
+											src="https://www.capitolio.org.br/wp-content/themes/capitolio\/images\/icon-sala_de_cinema-room.png">
+										<span>Sala de Cinema</span>
+									</div>
+								</div>
+								<h1 class="movie-title">Cidade Pássaro</h1>
+								<div class="movie-subtitle">entrada franca</div>
+								<div class="movie-director">
+									Brasil | 2020 | 1h 55 minutos | DCP
+									<br> Direção: Mathias Mariani
+									<br> Classificação: 16 anos
+								</div>
+								<p class="movie-text">O nigeriano Amadi procura seu irmão Ikenna na cidade de São Paulo. Aos poucos percebe
+									que o supostamente bem sucedido professor de matemática inventou para sua família uma narrativa
+									imaginária de sua vida no Brasil. Amadi descobre lentamente
+									a verdade em uma missão pelo submundo da cidade. “Ao longo da minha vida a questão de […]</p>
+								<a class="read-more" href="/eventos/9439">leia +</a>
+							</div>
+						</div>
+					</div>
+				</code></pre>
+			</section>
+			<section data-markdown>
+				<textarea data-template>
+					<h4>(momento de alegria)</h4>
+					<img src="./midias/god-bless-html.png">
+				</textarea>
+			</section>
+			<section>
+				<p>Mas... nem tudo são flores!</p>
+				<p><small><a href="https://cinebancarios.blogspot.com">https://cinebancarios.blogspot.com</a> 👀</small></p>
+				<h3>CineBancarios: Um estudo de caso (do caos)</h3>
+			</section>
+			<section>
+				<h3>Apresentando o CineBancários</h3>
+
+				<img src="./midias/cinebancarios-logo-crop.png" style="border-radius:5%;" width="250">
+				<div style="display: flex; align-items: start; justify-content: center;">
+					<ul>
+						<li>Cinema em atividade desde ~2009</li>
+						<li>Espaço dedicado a cultura</li>
+						<li>Preços populares</li>
+						<li>Programação diferenciada</li>
+					</ul>
+				</div>
+			</section>
+			<section>
+				<h2>Onde fica</h2>
+
+				<div class="r-stack">
+					<img data-fragment-index="0" class="fragment fade-out" width="600" src="./midias/cinebancarios-google-maps.png">
+					<img data-fragment-index="0" class="fragment fade-in" width="600" src="./midias/cinebancarios-street-view.png">
+				</div>
+			</section>
+			<section data-markdown>
+				<textarea data-template>
+					<small>Mantém um blog com a programação semanal desde 2010</small>
+					
+					<div class="r-stack">
+						<img class="fragment" src="./midias/cinebancarios-site-print.png">
+						<div class="fragment" style="
+						position: absolute;
+						right: 40%;
+						width: 40%;
+						box-shadow:
+							0 1px 4px rgba(0, 0, 0, 0.5),
+							0 5px 25px rgba(0, 0, 0, 0.2);
+						background-color: rgba(0, 0, 0, 0.9);
+						color: #fff;
+						padding: 20px;
+						font-size: 20px;
+						text-align: left;">
+							<p>15 anos de blog</p>
+							<p>635 posts<p>
+							<p>~3.5 posts por mês!</p>
+						</div>
+					</div>
+				</textarea>
+			</section>
+			<section data-markdown>
+				<textarea data-template>
+					## O grande problema
+					
+					<small>O conteúdo está ali, mas totalmente desestruturado</small>
+
+					As postagens são feitas em estilo "texto livre".
+				</textarea>
+			</section>
+			<section data-background-iframe="https://cinebancarios.blogspot.com/2023/08/retratos-fantasmas-e-o-acidente.html" data-background-interactive>
+				<div style="position: absolute;
+					width: 40%;
+					right: 0;
+					box-shadow:
+						0 1px 4px rgba(0, 0, 0, 0.5),
+						0 5px 25px rgba(0, 0, 0, 0.2);
+					background-color: rgba(0, 0, 0, 0.9);
+					color: #fff;
+					padding: 20px;
+					font-size: 20px;
+					text-align: left;">
+					<h2 style="color: #fff;">um exemplo real</h2>
+					<p>(em que existe alguma esperança)</p>
+				</div>
+			</section>
+			<section>
+				<h3>O HTML por trás <img width="96" src="./midias/happysg-emoji.png"></h3>
+				<pre><code data-trim data-line-numbers="|4|3|2|1|13-21|12,11|10">
+					<p>RETRATOS FANTASMAS</p>
+					<p>Brasil/Documentário/2022/ 93min.</p>
+					<p>Direção: Kleber Mendonça Filho</p>
+					<p>Sinopse: O filme tem o centro da cidade do Recife como personagem
+						principal, sendo um espaço histórico e humano, revisitado através
+						dos grandes cinemas que serviram como espaços de convívio durante o
+						século XX. Foram lugares de sonho e de indústria, e a relação das
+						pessoas com esse universo é um marcador de tempo para as mudanças
+						dos costumes em sociedade.</p>
+					<p><b>O ACIDENTE</b></p>
+					<p>Drama | 95 min. | Brasil
+					</p>
+					<p>Sinopse: A ciclista Joana é vítima de um atropelamento. Ela foi
+						carregada no capô de um carro após antagonizar com uma motorista
+						que a cortou. A jovem sai ilesa e decide esconder o ocorrido de sua
+						parceira, Cecília, temendo que isso afete os planos do casal. Porém,
+						um vídeo viral aparece online, obrigando-a a prestar queixa na
+						polícia. Relutante, a dupla entra na vida de Elaine, a motorista,
+						seu ex-marido Cléber e seu filho Maicon, um introvertido cineasta
+						iniciante.
+					</p>
+					<p>Elenco: Carol Martins (Joana), Carina Sehn (Cecília), Luis Felipe
+						Xavier (Maicon), Gabriela Greco (Elaine) e Marcello Crawshawn
+						(Cléber)</p>
+					<p><b>HORÁRIOS</b><b> </b><b>CINEBANCÁRIOS </b>
+					</p>
+					<p>24 a 30 de agosto</p>
+					<p style="line-height: 100%; margin-bottom: 0cm;">15h: RETRATOS
+						FANTASMAS</p>
+					<p style="line-height: 100%; margin-bottom: 0cm;">17h: O ACIDENTE</p>
+					<p style="line-height: 100%; margin-bottom: 0cm;">19h: RETRATOS
+						FANTASMAS</p>
+				</code></pre>
+			</section>
+			<section>
+				<h3>Um primeiro algoritmo</h3>
+				<p>Implementação real (🍝): <img src="./midias/impl-1-repo.png"></p>
+			</section>
+			<section>
+				<h2>Um primeiro algoritmo</h2>
+				<p>HDD (Hope driven development)</p>
+				<ul>
+					Esperamos que...
+					<li>adicionem o nome do diretor</li>
+					<li>adicionem informação de país, genero, ano</li>
+					<li><strong>exista uma sinopse para cada filme que está passando</strong></li>
+				</ul>
+			</section>
+			<section data-background-iframe="https://cinebancarios.blogspot.com/2023/09/cinebancarios-exibe-estreia-deangela-na.html" data-background-interactive>
+				<div style="position: absolute;
+					width: 40%;
+					right: 0;
+					box-shadow:
+						0 1px 4px rgba(0, 0, 0, 0.5),
+						0 5px 25px rgba(0, 0, 0, 0.2);
+					background-color: rgba(0, 0, 0, 0.9);
+					color: #fff;
+					padding: 20px;
+					font-size: 20px;
+					text-align: left;">
+					<h2 style="color: #fff;">um outro exemplo</h2>
+					<p>(em que existe menos esperança)</p>
+				</div>
+			</section>
+			<section>
+				<h2>O HTML por trás 🥴</h2>
+				<pre><code data-line-numbers="" data-trim>
+					<div style="box-sizing: border-box;"><span style="box-sizing: border-box; font-weight: bolder;">RETRATOS
+						FANTASMAS</span><br style="box-sizing: border-box;">Brasil/Documentário/2022/ 93min<br
+						style="box-sizing: border-box;">Direção: Kleber Mendonça Filho<br style="box-sizing: border-box;">Sinopse: O
+					filme tem o centro da cidade do Recife como personagem principal, sendo um espaço histórico e humano, revisitado
+					através dos grandes cinemas que serviram como espaços de convívio durante o século XX. Foram lugares de sonho e de
+					indústria, e a relação das pessoas com esse universo é um marcador de tempo para as mudanças dos costumes em
+					sociedade.<p style="box-sizing: border-box; margin-bottom: 1rem; margin-top: 13px;"></p>
+					<div style="box-sizing: border-box;"><span style="box-sizing: border-box; font-weight: bolder;">PARA ONDE VOAM AS
+							FEITICEIRAS</span><br style="box-sizing: border-box;">Brasil/ Documentário/ 2020/ 89min<br
+							style="box-sizing: border-box;">Direção: Eliane Caffé, Carla Caffé e Beto Amaral<p
+							style="box-sizing: border-box; margin-bottom: 1rem; margin-top: 13px;"></p>
+						<p style="box-sizing: border-box; margin-bottom: 1rem; margin-top: 13px;">Sinopse: Para onde voam as feiticeiras
+							acompanha a deriva de encenações e improvisos de sete artistas pelas ruas do centro de São Paulo em uma
+							experiência cinematográfica que torna visível a persistência de preconceitos arcaicos de gênero e raça no
+							imaginário comum. No centro desta narrativa polifônica está a importância da resistência política através
+							das alianças de luta comum entre coletivos LGBTQIA+, negritude, indígenas e trabalhadores sem teto.</p>
+						<p style="box-sizing: border-box; margin-bottom: 1rem; margin-top: 13px;"><span
+								style="box-sizing: border-box; font-weight: bolder;">HORÁRIOS CINEBANCÁRIOS<br
+									style="box-sizing: border-box;">7 a 13 de setembro</span></p>
+						<p style="box-sizing: border-box; margin-bottom: 1rem; margin-top: 13px;">15h: PARA ONDE VOAM AS FEITICEIRAS</p>
+						<div style="box-sizing: border-box;">17h: RETRATOS FANTASMAS</div>
+						<div style="box-sizing: border-box;"><br></div>
+						<div style="box-sizing: border-box;">19h: ANGELA<p
+								style="box-sizing: border-box; margin-bottom: 1rem; margin-top: 13px;"></p>
+						</div>
+					</div>
+				</div>
+				</code></pre>
+			</section>
+			<section>
+				<h2>Arrumando um pouco...</h2>
+				<pre><code data-line-numbers="|5-8|4|3|2|1" data-trim>
+					<div>
+						<span>RETRATOS FANTASMAS</span>
+						<br>Brasil/Documentário/2022/ 93min
+						<br>Direção: Kleber Mendonça Filho<br>
+						Sinopse: O filme tem o centro da cidade do Recife como personagem principal, sendo um espaço histórico e humano, revisitado
+						através dos grandes cinemas que serviram como espaços de convívio durante o século XX. Foram lugares de sonho e de
+						indústria, e a relação das pessoas com esse universo é um marcador de tempo para as mudanças dos costumes em
+						sociedade.
+						<p></p>
+						<div>
+							<span>PARA ONDE VOAM AS FEITICEIRAS</span>
+							<br>Brasil/ Documentário/ 2020/ 89min
+							<br>Direção: Eliane Caffé, Carla Caffé e Beto Amaral
+							<p></p>
+							<p>Sinopse: Para onde voam as feiticeiras
+								acompanha a deriva de encenações e improvisos de sete artistas pelas ruas do centro de São Paulo em uma
+								experiência cinematográfica que torna visível a persistência de preconceitos arcaicos de gênero e raça no
+								imaginário comum. No centro desta narrativa polifônica está a importância da resistência política através
+								das alianças de luta comum entre coletivos LGBTQIA+, negritude, indígenas e trabalhadores sem teto.</p>
+							<p>
+								<span>
+									HORÁRIOS CINEBANCÁRIOS
+									<br>7 a 13 de setembro
+								</span>
+							</p>
+							<p>15h: PARA ONDE VOAM AS FEITICEIRAS</p>
+							<div>17h: RETRATOS FANTASMAS</div>
+							<div><br></div>
+							<div>
+								19h: ANGELA<p></p>
+							</div>
+						</div>
+					</div>
+				</code></pre>
+			</section>
+			<section>
+				<h2>Acessando Text Nodes</h2>
+				<div class="r-stack">
+					<img class="fragment" src="./midias/dom-nodes.png">
+					<img class="fragment" src="./midias/text-nodes-1.png">
+					<img class="fragment" src="./midias/text-nodes-2.png">
+					<img class="fragment" src="./midias/text-nodes-3.png">
+					<div class="fragment" style="
+					position: absolute;
+					right: 40%;
+					width: 40%;
+					box-shadow:
+						0 1px 4px rgba(0, 0, 0, 0.5),
+						0 5px 25px rgba(0, 0, 0, 0.2);
+					background-color: rgba(0, 0, 0, 0.9);
+					color: #fff;
+					padding: 20px;
+					font-size: 20px;
+					text-align: left;">
+						<p>A mesma lógica segue válida,</p>
+						<p>apenas trabalhamos com os nós de texto ao invés de elementos HTML<p>
+					</div>
+				</div>
+			</section>
+			<section data-background-iframe="https://cinebancarios.blogspot.com/2025/11/premiado-querido-tropico-e-o-que.html" data-background-interactive>
+				<div style="position: absolute;
+					width: 40%;
+					right: 0;
+					box-shadow:
+						0 1px 4px rgba(0, 0, 0, 0.5),
+						0 5px 25px rgba(0, 0, 0, 0.2);
+					background-color: rgba(0, 0, 0, 0.9);
+					color: #fff;
+					padding: 20px;
+					font-size: 20px;
+					text-align: left;">
+					<h2 style="color: #fff;">um exemplo pior</h2>
+					<p>com um erro sutil</p>
+				</div>
+			</section>
+			<section>
+				<h2>A saída do scrapper</h2>
+				<pre><code data-trim data-line-numbers="|9|19|29" class="language-json">
+					[
+						{
+							"url": "https://cinebancarios.blogspot.com",
+							"cinema": "CineBancários",
+							"slug": "cinebancarios",
+							"features": [
+							{
+								"poster": "",
+								"title": "QUERIDO TRÓPICO",
+								"general_info": "Panamá/Colômbia/Drama/ 108min.",
+								"director": "Ana Endara",
+								"classification": false,
+								"excerpt": "Sinopse: Na vibrante cidade do Panamá, Ana Maria é uma imigrante colombiana que se torna cuidadora de Mercedes, uma rica mulher de meia idade que está lutando contra a demência. As duas desenvolvem uma inesperada amizade transformadora.",
+								"time": "",
+								"read_more": null
+							},
+							{
+								"poster": "",
+								"title": "O QUE A NATUREZA TE CONTA",
+								"general_info": "Coréia do sul/ Drama/ 2025/108min",
+								"director": "Hong Sang-soo",
+								"classification": false,
+								"excerpt": "Sinopse: Um jovem poeta deixa a namorada na casa dos pais dela e se surpreende com seu tamanho. Ele encontra o pai dela, conhece a mãe e a irmã dela e todas acabam passando um longo dia juntas; alimentadas por conversas, comida e bebidas.",
+								"time": "",
+								"read_more": null
+							},
+							{
+								"poster": "",
+								"title": "Brasil/França/Holanda/Alemanha /Drama/2024/ 158 min.Direção: Kleber Mendonça Filho",
+								"general_info": "Brasil/França/Holanda/Alemanha /Drama/2024/ 158 min.Direção: Kleber Mendonça FilhoBrasil/França/Holanda/Alemanha /Drama/2024/ 158 min.Direção: Kleber Mendonça Filho",
+								"director": false,
+								"classification": false,
+								"excerpt": "Sinopse: O longa é um thriller político, que acompanha Marcelo (Wagner Moura), um especialista em tecnologia que foge de um passado misterioso e volta ao Recife em busca de paz, mas logo percebe que a cidade está longe de ser o refúgio que procura.",
+								"time": "",
+								"read_more": null
+							}
+							]
+						}
+					]
+				</code></pre>
+			</section>
+			<section>
+				<h3>Oh god why</h3>
+				<div class="r-stack">
+					<img class="fragment" src="./midias/text-node-error-1.png">
+					<img class="fragment" src="./midias/text-node-error-2.png">
+					<img class="fragment" src="./midias/text-node-error-3.png">
+				</div>
+			</section>
+			<section>
+				<h3>E com o tempo acabamos assim...</h3>
+				<div class="r-stack">
+					<img class="fragment" src="./midias/diagram-hell.png">
+					<img class="fragment" src="./midias/this-is-fine.gif">
+				</div>
+			</section>
+			<section data-markdown data-autoslide="2000" data-transition="fade-out">
+				<textarea data-template>
+					## Uma saída: LLMs
+
+					E se houvesse uma forma de pedir pra um modelo estruturar os dados?
+
+					<img src="./midias/html-hope-json.png">
+				</textarea>
+			</section>
+			<section data-markdown data-transition="fade-in">
+				<textarea data-template>
+					## Uma saída: LLMs
+
+					E se houvesse uma forma de pedir pra um modelo estruturar os dados?
+
+					<img src="./midias/html-llm-json.png">
+				</textarea>
+			</section>
+			<section data-markdown>
+				<textarea data-template>
+					### A pipeline
+
+					<img class="r-stretch" src="./midias/mermaid-diagram-2025-11-21-160812.png">
+				</textarea>
+			</section>
+			<section>
+				<h2>Os resultados</h2>
+				<pre><code data-trim class="language-json">
+					{
+						"title": "Documentário Em busca de Iara segue em cartaz até dia 9",
+						"link": "http://cinebancarios.blogspot.com/2014/04/documentario-em-busca-de-iara-segue-em.html",
+						"pubDate": "2014-04-03T20:00:00+00:00",
+						"llm": "deepseek-chat",
+						"output": {
+							"movies": [
+								{
+									"title": "Em Busca de Iara",
+									"image_url": "https://blogger.googleusercontent.com/img/b/Iara+escadaria+Pacaembu_kinoscopio.jpg",
+									"general_info": "Brasil/documentário/2013/91min",
+									"director": "Flavio Frederico",
+									"classification": "Não informada",
+									"excerpt": "Documentário de Flavio Frederico que resgata a vida de Iara Iavelberg...",
+									"screening_dates": [
+										"2014-04-01 15:00",
+										"2014-04-01 17:00",
+										"2014-04-01 19:00",
+										"2014-04-09 15:00"
+									]
+								}
+							]
+						}
+					}
+				</code></pre>
+			</section>
+			<section>
+				<h2>Os resultados</h2>
+				<p>Parecem bons. Mas será que dá pra confiar?</p>
+			</section>
+			<section data-markdown>
+				<textarea data-template>
+					## A criação de alertas
+
+					(Nilton time)
+				</textarea>
+			</section>
+			<section>
+				<p>🖤🖤🖤 Obrigado pela atenção 🖤🖤🖤</p>
+				<p>Participe do projeto: <a href="https://cinemaempoa.com.br">cinemaempoa.com.br</a></p>
+			</section>
+		</div>
+	</div>
+
+	<script src="dist/reveal.js"></script>
+	<script src="plugin/notes/notes.js"></script>
+	<script src="plugin/markdown/markdown.js"></script>
+	<script src="plugin/highlight/highlight.js"></script>
+	<script>
+		// More info about initialization & config:
+		// - https://revealjs.com/initialization/
+		// - https://revealjs.com/config/
+		Reveal.initialize({
+			hash: true,
+
+			// Learn about plugins: https://revealjs.com/plugins/
+			plugins: [RevealMarkdown, RevealHighlight, RevealNotes]
+		});
+	</script>
+</body>
+
+</html>
