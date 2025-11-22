@@ -3,3 +3,5 @@ cinebancarios/
 *.json
 *.db
 .env
+.venv/
+__pycache__
