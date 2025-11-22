@@ -39,7 +39,7 @@
 					<div style="display: flex; align-items: start; justify-content: center;">
 						<img style="object-fit: contain; border-radius: 50%;" width="200" src="./midias/nilton-2.png">
 						<ul>
-							<li>Python Developer <small>PROCURANDO TRAMPO 🤣</small></li>
+							<li>Python Developer</li>
 							<li>Revisor Técnico
 								<ul>
 									<li>
@@ -607,12 +607,63 @@
 			<section>
 				<h2>Os resultados</h2>
 				<p>Parecem bons. Mas será que dá pra confiar?</p>
+				<p>Isso é uma cilada, Bino?</p>
 			</section>
 			<section data-markdown>
-				<textarea data-template>
-					## A criação de alertas
-
-					(Nilton time)
+				<textarea>
+				<h3>O Desafio (Mais um) - Inconsistência dos LLMs</h3>
+				<ul>
+					<li>LLMs diferentes interpretam o mesmo texto de maneiras diferentes. Isso leva a dados inconsistentes e conflitantes.</li>
+					<li>Um LLM pode "alucinar" uma sessão em um dia em que o cinema está normalmente fechado (ex: segundas-feiras).</li>
+				</ul>
+				</textarea>
+			</section>
+			<section data-markdown>
+				<textarea>
+				<h3>A Solução - Um Motor de Comparação Automatizado</h3>
+				<ul>
+					<li>Construímos um segundo pipeline que usa um LLM como "juiz" para comparar as saídas dos arquivos JSON criados anteriormente.</li>
+					<li>Mas como que é esse pipeline?</li>
+				</ul>
+				</textarea>
+			</section>
+			<section data-markdown>
+				<textarea>
+					<img src="./midias/mermaid-diagram-2025-11-21-232934.png">
+				</textarea>
+			</section>
+			<section data-markdown>
+				<textarea>
+				<h2>"Talk is cheap. Show me the code."</h2>
+				<h3>Linus Torvalds</h3>
+				</textarea>
+			</section>
+			<section data-markdown>
+				<textarea>
+				<h3>Desafios com LLMs</h3>
+				<ul>
+					<li>LLMs possuem janelas de contexto finitas. Textos muito longos podem ser truncados ou causar falha na extração.</li>
+					<li>LLMs utilizados frequentemente impõem limites de requisições ou sofrem com alta latência, levando a erros e interrupções no pipeline.</li>
+					<li>O uso massivo de APIs de LLM pode gerar custos significativos.</li>
+				</ul>
+				</textarea>
+			</section>
+			<section data-markdown>
+				<textarea>
+				<h3>Principais Aprendizados</h3>
+				<ul>
+					<li>A qualidade da saída de um LLM é diretamente proporcional à qualidade do prompt.</li>
+					<li>Prompts detalhados com regras, exemplos e lógica de negócio são essenciais para resultados consistentes.</li>
+				</ul>
+				</textarea>
+			</section>
+			<section data-markdown>
+				<textarea>
+				<h3>Próximos Passos</h3>
+				<ul>
+					<li>Evoluir o "LLM juiz" para não apenas comparar, mas também para corrigir e unificar as saídas em um único registro "ouro" confiável.</li>
+					<li>Investigar o uso de modelos de código aberto (open source) para reduzir a dependência de APIs pagas e otimizar os custos operacionais.</li>
+				</ul>
 				</textarea>
 			</section>
 			<section>
